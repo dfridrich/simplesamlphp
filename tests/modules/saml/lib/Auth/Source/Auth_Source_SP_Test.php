@@ -6,12 +6,12 @@ namespace SimpleSAML\Test\Module\saml\Auth\Source;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use SAML2\AuthnRequest;
-use SAML2\Constants;
-use SAML2\Utils;
 use SimpleSAML\Configuration;
 use SimpleSAML\Module\saml\Error\NoAvailableIDP;
 use SimpleSAML\Module\saml\Error\NoSupportedIDP;
+use SimpleSAML\SAML2\Constants;
+use SimpleSAML\SAML2\XML\samlp\AuthnRequest;
+use SimpleSAML\SAML2\Utils;
 use SimpleSAML\Test\Metadata\MetaDataStorageSourceTest;
 use SimpleSAML\Test\Utils\ClearStateTestCase;
 use SimpleSAML\Test\Utils\ExitTestException;

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace SimpleSAML\Test;
 
 use Exception;
-use SAML2\Constants;
 use SimpleSAML\Configuration;
 use SimpleSAML\Error;
+use SimpleSAML\SAML2\Constants;
 use SimpleSAML\Test\Utils\ClearStateTestCase;
 
 /**

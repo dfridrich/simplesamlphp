@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace SimpleSAML\Utils\Config;
 
-use SAML2\Constants;
 use SimpleSAML\Configuration;
 use SimpleSAML\Logger;
+use SimpleSAML\SAML2\Constants;
 
 /**
  * Class with utilities to fetch different configuration objects from metadata configuration arrays.
@@ -237,7 +237,7 @@ class Metadata
      * @param array $endpoints An array with endpoints.
      * @param array $bindings An array with acceptable bindings. Can be null if any binding is allowed.
      *
-     * @return array|NULL The default endpoint, or null if no acceptable endpoints are used.
+     * @return array|null The default endpoint, or null if no acceptable endpoints are used.
      *
      */
     public static function getDefaultEndpoint(array $endpoints, array $bindings = null): ?array
