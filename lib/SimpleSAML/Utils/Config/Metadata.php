@@ -321,7 +321,7 @@ class Metadata
             // handle current configurations specifying an array in the NameIDPolicy config option
             $nameIdPolicy_cf = Configuration::loadFromArray($nameIdPolicy);
             $policy = [
-                'Format'      => $nameIdPolicy_cf->getString('Format', Constants::NAMEID_TRANSIENT),
+                'Format'      => $nameIdPolicy_cf->getString('Format', null),
                 'AllowCreate' => $nameIdPolicy_cf->getBoolean('AllowCreate', true),
             ];
             $spNameQualifier = $nameIdPolicy_cf->getString('SPNameQualifier', false);
@@ -330,7 +330,7 @@ class Metadata
             }
         } elseif ($nameIdPolicy === null) {
             // when NameIDPolicy is unset or set to null, default to transient as before
-            $policy = ['Format' => Constants::NAMEID_TRANSIENT, 'AllowCreate' => true];
+            $policy = ['AllowCreate' => true];
         }
 
         return $policy;
