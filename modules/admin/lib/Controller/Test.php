@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace SimpleSAML\Module\admin\Controller;
 
-use SAML2\Constants;
-use SAML2\XML\saml\NameID;
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\Auth;
 use SimpleSAML\Configuration;
 use SimpleSAML\HTTP\RunnableResponse;
 use SimpleSAML\Locale\Translate;
 use SimpleSAML\Module;
+use SimpleSAML\SAML2\Constants;
+use SimpleSAML\SAML2\XML\saml\NameID;
 use SimpleSAML\Session;
 use SimpleSAML\Utils;
 use SimpleSAML\XHTML\Template;
@@ -259,11 +259,11 @@ class Test
                             if (!($elem->localName === 'NameID' && $elem->namespaceURI === Constants::NS_SAML)) {
                                 continue;
                             }
-                            $str .= $this->presentEptid($trans, new NameID($elem));
+                            $str .= $this->presentEptid($trans, NameID::fromXML($elem));
                             break; // we only support one NameID here
                         }
                         $str .= '</td></tr>';
-                    } elseif (is_a($value[0], '\SAML2\XML\saml\NameID')) {
+                    } elseif (is_a($value[0], '\SimpleSAML\SAML2\XML\saml\NameID')) {
                         $str .= $this->presentEptid($trans, $value[0]);
                         $str .= '</td></tr>';
                     } else {
