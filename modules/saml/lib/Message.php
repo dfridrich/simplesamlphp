@@ -508,6 +508,7 @@ class Message
                     Constants::COMPARISON_MAXIMUM,
                     Constants::COMPARISON_BETTER,
                 ], Constants::COMPARISON_EXACT);
+                $accr = new AuthnContextClassRef($accr);
             }
         } elseif (isset($state['saml:AuthnContextClassRef'])) {
             $accr = $state['saml:AuthnContextClassRef'];
@@ -536,11 +537,12 @@ class Message
                     Constants::COMPARISON_MAXIMUM,
                     Constants::COMPARISON_BETTER,
                 ], Constants::COMPARISON_EXACT);
+                $accr = new AuthnContextClassRef($accr);
             }
         }
 
         if ($accr !== null) {
-            $rac = new RequestedAuthnContext([new AuthnContextClassRef($accr)], $comp);
+            $rac = new RequestedAuthnContext([$accr], $comp);
         }
 
         $protbind = $spMetadata->getValueValidate('ProtocolBinding', [
