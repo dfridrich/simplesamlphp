@@ -7,7 +7,7 @@ namespace SimpleSAML\Test\Utils;
 use ReflectionObject;
 use SimpleSAML\Configuration;
 use SimpleSAML\Module\saml\Auth\Source\SP;
-use SimpleSAML\SAML2\AuthnRequest;
+use SimpleSAML\SAML2\XML\samlp\AuthnRequest;
 use SimpleSAML\SAML2\Binding;
 
 /**
