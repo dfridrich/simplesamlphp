@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace SimpleSAML\Module\saml\SP;
 
 use PDO;
-use SAML2\XML\saml\NameID;
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\Logger;
+use SimpleSAML\SAML2\XML\saml\IdentifierInterface;
 use SimpleSAML\Session;
 use SimpleSAML\Store;
 use SimpleSAML\Utils;
@@ -327,16 +327,16 @@ class LogoutStore
      *
      * Please observe the change of the signature in this method. Previously, the second parameter ($nameId) was forced
      * to be an array. However, it has no type restriction now, and the documentation states it must be a
-     * \SAML2\XML\saml\NameID object. Currently, this function still accepts an array passed as $nameId, and will
-     * silently convert it to a \SAML2\XML\saml\NameID object. This is done to keep backwards-compatibility, though will
+     * \SimpleSAML\SAML2\XML\saml\NameID object. Currently, this function still accepts an array passed as $nameId, and will
+     * silently convert it to a \SimpleSAML\SAML2\XML\saml\NameID object. This is done to keep backwards-compatibility, though will
      * no longer be possible in the future as the $nameId parameter will be required to be an object.
      *
      * @param string $authId  The authsource ID.
-     * @param \SAML2\XML\saml\NameID $nameId The NameID of the user.
+     * @param \SimpleSAML\SAML2\XML\saml\IdentifierInterface $nameId The NameID of the user.
      * @param string|null $sessionIndex  The SessionIndex of the user.
      * @param int $expire
      */
-    public static function addSession(string $authId, NameID $nameId, ?string $sessionIndex, int $expire): void
+    public static function addSession(string $authId, IdentifierInterface $nameId, ?string $sessionIndex, int $expire): void
     {
         $session = Session::getSessionFromRequest();
         if ($session->isTransient()) {
@@ -384,11 +384,11 @@ class LogoutStore
      * Log out of the given sessions.
      *
      * @param string $authId  The authsource ID.
-     * @param \SAML2\XML\saml\NameID $nameId The NameID of the user.
+     * @param \SimpleSAML\SAML2\XML\saml\IdentifierInterface $nameId The NameID of the user.
      * @param array $sessionIndexes  The SessionIndexes we should log out of. Logs out of all if this is empty.
      * @return int|false  Number of sessions logged out, or FALSE if not supported.
      */
-    public static function logoutSessions(string $authId, NameID $nameId, array $sessionIndexes)
+    public static function logoutSessions(string $authId, IdentifierInterface $nameId, array $sessionIndexes)
     {
         $store = Store::getInstance();
         if ($store === false) {

@@ -1,12 +1,12 @@
 <?php
 
-use SAML2\Constants;
 use SimpleSAML\Auth;
 use SimpleSAML\Configuration;
 use SimpleSAML\Error;
 use SimpleSAML\Locale\Translate;
 use SimpleSAML\Metadata;
 use SimpleSAML\Module;
+use SimpleSAML\SAML2\Constants;
 use SimpleSAML\Store;
 use SimpleSAML\Utils;
 use SimpleSAML\XHTML\Template;

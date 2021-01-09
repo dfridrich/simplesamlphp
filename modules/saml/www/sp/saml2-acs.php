@@ -4,15 +4,15 @@
  * Assertion consumer service handler for SAML 2.0 SP authentication client.
  */
 
-use SAML2\Binding;
-use SAML2\Assertion;
-use SAML2\HTTPArtifact;
-use SAML2\Response;
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\Auth;
 use SimpleSAML\Error;
 use SimpleSAML\Module;
 use SimpleSAML\Logger;
+use SimpleSAML\SAML2\Binding;
+use SimpleSAML\SAML2\HTTPArtifact;
+use SimpleSAML\SAML2\XML\saml\Assertion;
+use SimpleSAML\SAML2\XML\samlp\Response;
 use SimpleSAML\Session;
 use SimpleSAML\Store;
 use SimpleSAML\Utils;
