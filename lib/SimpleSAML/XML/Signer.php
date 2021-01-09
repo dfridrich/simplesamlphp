@@ -15,10 +15,10 @@ namespace SimpleSAML\XML;
 use DOMComment;
 use DOMElement;
 use DOMText;
-use RobRichards\XMLSecLibs\XMLSecurityDSig;
-use RobRichards\XMLSecLibs\XMLSecurityKey;
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\Utils;
+use SimpleSAML\XMLSecurity\XMLSecurityDSig;
+use SimpleSAML\XMLSecurity\XMLSecurityKey;
 
 class Signer
 {

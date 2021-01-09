@@ -10,15 +10,16 @@ use SimpleSAML\Configuration;
 use SimpleSAML\Logger;
 use SimpleSAML\Module\adfs\SAML2\XML\fed\SecurityTokenServiceType;
 use SimpleSAML\SAML2\Constants;
+use SimpleSAML\SAML2\XML\md\AbstractEndpointType;
+use SimpleSAML\SAML2\XML\md\AbstractIndexedEndpointType;
+use SimpleSAML\SAML2\XML\md\AbstractRoleDescriptor;
 use SimpleSAML\SAML2\XML\md\AttributeAuthorityDescriptor;
 use SimpleSAML\SAML2\XML\md\AttributeConsumingService;
-use SimpleSAML\SAML2\XML\md\EndpointType;
+use SimpleSAML\SAML2\XML\md\ContactPerson;
 use SimpleSAML\SAML2\XML\md\EntityDescriptor;
 use SimpleSAML\SAML2\XML\md\IDPSSODescriptor;
-use SimpleSAML\SAML2\XML\md\IndexedEndpointType;
 use SimpleSAML\SAML2\XML\md\Organization;
 use SimpleSAML\SAML2\XML\md\RequestedAttribute;
-use SimpleSAML\SAML2\XML\md\RoleDescriptor;
 use SimpleSAML\SAML2\XML\md\SPSSODescriptor;
 use SimpleSAML\SAML2\XML\mdattr\EntityAttributes;
 use SimpleSAML\SAML2\XML\mdrpi\RegistrationInfo;
@@ -29,7 +30,9 @@ use SimpleSAML\SAML2\XML\mdui\UIInfo;
 use SimpleSAML\SAML2\XML\saml\Attribute;
 use SimpleSAML\SAML2\XML\saml\AttributeValue;
 use SimpleSAML\SAML2\XML\shibmd\Scope;
+use SimpleSAML\SAML2\Utils as SAMLUtils;
 use SimpleSAML\Utils;
+use SimpleSAML\XML\Utils as XMLUtils;
 
 /**
  * Class for generating SAML 2.0 metadata from SimpleSAMLphp metadata arrays.
@@ -164,10 +167,10 @@ class SAMLBuilder
      * Add extensions to the metadata.
      *
      * @param \SimpleSAML\Configuration    $metadata The metadata to get extensions from.
-     * @param \SimpleSAML\SAML2\XML\md\RoleDescriptor $e
+     * @param \SimpleSAML\SAML2\XML\md\AbstractRoleDescriptor $e
      *   Reference to the element where the Extensions element should be included.
      */
-    private function addExtensions(Configuration $metadata, RoleDescriptor $e): void
+    private function addExtensions(Configuration $metadata, AbstractRoleDescriptor $e): void
     {
         if ($metadata->hasValue('tags')) {
             $a = new Attribute();
@@ -189,14 +192,10 @@ class SAMLBuilder
 
         if ($metadata->hasValue('scope')) {
             foreach ($metadata->getArray('scope') as $scopetext) {
-                $s = new Scope();
-                $s->setScope($scopetext);
                 // Check whether $ ^ ( ) * | \ are in a scope -> assume regex.
-                if (1 === preg_match('/[\$\^\)\(\*\|\\\\]/', $scopetext)) {
-                    $s->setIsRegexpScope(true);
-                } else {
-                    $s->setIsRegexpScope(false);
-                }
+                $regex = (1 === preg_match('/[\$\^\)\(\*\|\\\\]/', $scopetext));
+
+                $s = new Scope($scopetext, $regex);
                 $e->setExtensions(array_merge($e->getExtensions(), [$s]));
             }
         }
@@ -234,7 +233,7 @@ class SAMLBuilder
                         $ri->setRegistrationAuthority($riValues);
                         break;
                     case 'instant':
-                        $ri->setRegistrationInstant(\SAML2\Utils::xsDateTimeToTimestamp($riValues));
+                        $ri->setRegistrationInstant(XMLUtils::xsDateTimeToTimestamp($riValues));
                         break;
                     case 'policies':
                         $ri->setRegistrationPolicy($riValues);
@@ -264,21 +263,13 @@ class SAMLBuilder
                         break;
                     case 'Keywords':
                         foreach ($uiValues as $lang => $keywords) {
-                            $uiItem = new Keywords();
-                            $uiItem->setLanguage($lang);
-                            $uiItem->setKeywords($keywords);
+                            $uiItem = new Keywords($lang, $keywords);
                             $ui->addKeyword($uiItem);
                         }
                         break;
                     case 'Logo':
                         foreach ($uiValues as $logo) {
-                            $uiItem = new Logo();
-                            $uiItem->setUrl($logo['url']);
-                            $uiItem->setWidth($logo['width']);
-                            $uiItem->setHeight($logo['height']);
-                            if (isset($logo['lang'])) {
-                                $uiItem->setLanguage($logo['lang']);
-                            }
+                            $uiItem = new Logo($logo['url'], $logo['height'], $logo['width'], $logo['lang'] ?? null);
                             $ui->addLogo($uiItem);
                         }
                         break;
@@ -288,20 +279,21 @@ class SAMLBuilder
         }
 
         if ($metadata->hasValue('DiscoHints')) {
-            $dh = new DiscoHints();
+            $IPHints = $DomainHints = $GeolocationHints = [];
             foreach ($metadata->getArray('DiscoHints') as $dhName => $dhValues) {
                 switch ($dhName) {
                     case 'IPHint':
-                        $dh->setIPHint($dhValues);
+                        $IPHints = $dhValues;
                         break;
                     case 'DomainHint':
-                        $dh->setDomainHint($dhValues);
+                        $DomainHints = $dhValues;
                         break;
                     case 'GeolocationHint':
-                        $dh->setGeolocationHint($dhValues);
+                        $GeolocationHints = $dhValues;
                         break;
                 }
             }
+            $dh = new DiscoHints([], $IPHints, $DomainHints, $GeolocationHints);
             $e->setExtensions(array_merge($e->getExtensions(), [$dh]));
         }
     }
@@ -316,11 +308,7 @@ class SAMLBuilder
      */
     public function addOrganization(array $orgName, array $orgDisplayName, array $orgURL): void
     {
-        $org = new Organization();
-
-        $org->setOrganizationName($orgName);
-        $org->setOrganizationDisplayName($orgDisplayName);
-        $org->setOrganizationURL($orgURL);
+        $org = new Organization($orgName, $orgDisplayName, $orgURL);
 
         $this->entityDescriptor->setOrganization($org);
     }
@@ -359,7 +347,7 @@ class SAMLBuilder
      * @param bool  $indexed Whether the endpoints should be indexed.
      *
      * @return array An array of endpoint objects,
-     *     either \SimpleSAML\SAML2\XML\md\EndpointType or \SimpleSAML\SAML2\XML\md\IndexedEndpointType.
+     *     either \SimpleSAML\SAML2\XML\md\AbstractEndpointType or \SimpleSAML\SAML2\XML\md\AbstractIndexedEndpointType.
      */
     private static function createEndpoints(array $endpoints, bool $indexed): array
     {
@@ -420,9 +408,9 @@ class SAMLBuilder
         Configuration $metadata
     ): void {
         $attributes = $metadata->getArray('attributes', []);
-        $name = $metadata->getLocalizedString('name', null);
+        $names = $metadata->getLocalizedString('name', null);
 
-        if ($name === null || count($attributes) == 0) {
+        if ($names === null || count($attributes) == 0) {
             // we cannot add an AttributeConsumingService without name and attributes
             return;
         }
@@ -433,32 +421,41 @@ class SAMLBuilder
          * Add an AttributeConsumingService element with information as name and description and list
          * of requested attributes
          */
-        $attributeconsumer = new AttributeConsumingService();
-
-        $attributeconsumer->setIndex($metadata->getInteger('attributes.index', 0));
-
+        $isDefault = null;
         if ($metadata->hasValue('attributes.isDefault')) {
-            $attributeconsumer->setIsDefault($metadata->getBoolean('attributes.isDefault', false));
+            $isDefault = $metadata->getBoolean('attributes.isDefault', false);
         }
 
-        $attributeconsumer->setServiceName($name);
-        $attributeconsumer->setServiceDescription($metadata->getLocalizedString('description', []));
+        $serviceDescription = [];
+        foreach ($metadata->getLocalizedString('description', []) as $desc) {
+            $serviceDescription[] = new ServiceDescription($desc[0], $desc[1]);
+        }
+
+        $serviceName = [];
+        foreach ($names as $name) {
+            $serviceName[] = new ServiceName($name[0], $name[1]);
+        }
 
         $nameFormat = $metadata->getString('attributes.NameFormat', Constants::NAMEFORMAT_UNSPECIFIED);
+        $requestedAttributes = [];
         foreach ($attributes as $friendlyName => $attribute) {
-            $t = new RequestedAttribute();
-            $t->setName($attribute);
-            if (!is_int($friendlyName)) {
-                $t->setFriendlyName($friendlyName);
-            }
-            if ($nameFormat !== Constants::NAMEFORMAT_UNSPECIFIED) {
-                $t->setNameFormat($nameFormat);
-            }
-            if (in_array($attribute, $attributesrequired, true)) {
-                $t->setIsRequired(true);
-            }
-            $attributeconsumer->addRequestedAttribute($t);
+            $t = new RequestedAttribute(
+                $attribute,
+                in_array($attribute, $attributesrequired, true),
+                $nameFormat,
+                is_int($friendlyName) ? null : $friendlyName
+            );
+
+            $requestedAttributes[] = $t;
         }
+
+        $attributeconsumer = new AttributeConsumingService(
+            $metadata->getInteger('attributes.index', 0),
+            $serviceName,
+            $requestedAttributes,
+            $isDefault,
+            $serviceDescription
+        );
 
         $spDesc->addAttributeConsumingService($attributeconsumer);
     }
@@ -644,7 +641,7 @@ class SAMLBuilder
         // TODO: remove this check as soon as getContact() is called always before calling this function
         $details = Utils\Config\Metadata::getContact($details);
 
-        $e = new \SAML2\XML\md\ContactPerson();
+        $e = new ContactPerson();
         $e->setContactType($type);
 
         if (!empty($details['attributes'])) {
@@ -688,15 +685,15 @@ class SAMLBuilder
     /**
      * Add a KeyDescriptor with an X509 certificate.
      *
-     * @param \SimpleSAML\SAML2\XML\md\RoleDescriptor $rd The RoleDescriptor the certificate should be added to.
+     * @param \SimpleSAML\SAML2\XML\md\AbstractRoleDescriptor $rd The RoleDescriptor the certificate should be added to.
      * @param string                      $use The value of the 'use' attribute.
      * @param string                      $x509data The certificate data.
      */
-    private function addX509KeyDescriptor(RoleDescriptor $rd, string $use, string $x509data): void
+    private function addX509KeyDescriptor(AbstractRoleDescriptor $rd, string $use, string $x509data): void
     {
         Assert::oneOf($use, ['encryption', 'signing']);
 
-        $keyDescriptor = \SAML2\Utils::createKeyDescriptor($x509data);
+        $keyDescriptor = SAMLUtils::createKeyDescriptor($x509data);
         $keyDescriptor->setUse($use);
         $rd->addKeyDescriptor($keyDescriptor);
     }
@@ -707,10 +704,10 @@ class SAMLBuilder
      *
      * Helper function for adding a certificate to the metadata.
      *
-     * @param \SimpleSAML\SAML2\XML\md\RoleDescriptor $rd The RoleDescriptor the certificate should be added to.
+     * @param \SimpleSAML\SAML2\XML\md\AbstractRoleDescriptor $rd The RoleDescriptor the certificate should be added to.
      * @param \SimpleSAML\Configuration    $metadata The metadata of the entity.
      */
-    private function addCertificate(RoleDescriptor $rd, Configuration $metadata): void
+    private function addCertificate(AbstractRoleDescriptor $rd, Configuration $metadata): void
     {
         $keys = $metadata->getPublicKeys();
         foreach ($keys as $key) {

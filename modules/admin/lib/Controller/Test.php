@@ -169,7 +169,7 @@ class Test
 
     /**
      * @param \SimpleSAML\XHTML\Template $t
-     * @param \SAML2\XML\saml\NameID $nameId
+     * @param \SimpleSAML\SAML2\XML\saml\NameID $nameId
      * @return string
      */
     private function getNameIDHTML(Template $t, NameID $nameId): string
@@ -318,7 +318,7 @@ class Test
 
     /**
      * @param \SimpleSAML\Locale\Translate $t
-     * @param \SAML2\XML\saml\NameID $nameID
+     * @param \SimpleSAML\SAML2\XML\saml\NameID $nameID
      * @return string
      */
     private function presentEptid(Translate $t, NameID $nameID): string

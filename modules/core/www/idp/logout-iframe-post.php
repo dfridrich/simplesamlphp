@@ -49,11 +49,11 @@ if ($encryptNameId) {
     'idpEntityID' => $idpMetadata->getString('entityid'),
 ]);
 
-$bindings = [\SAML2\Constants::BINDING_HTTP_POST];
+$bindings = [\SimpleSAML\SAML2\Constants::BINDING_HTTP_POST];
 
 /** @var array $dst */
 $dst = $spMetadata->getDefaultEndpoint('SingleLogoutService', $bindings);
-$binding = \SAML2\Binding::getBinding($dst['Binding']);
+$binding = \SimpleSAML\SAML2\Binding::getBinding($dst['Binding']);
 $lr->setDestination($dst['Location']);
 $lr->setRelayState($relayState);
 

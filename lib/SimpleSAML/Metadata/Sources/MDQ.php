@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace SimpleSAML\Metadata\Sources;
 
-use RobRichards\XMLSecLibs\XMLSecurityDSig;
 use SimpleSAML\Assert\Assert;
 use SimpleSAML\Configuration;
 use SimpleSAML\Error;
 use SimpleSAML\Logger;
 use SimpleSAML\Metadata\SAMLParser;
 use SimpleSAML\Utils;
+use SimpleSAML\XMLScurity\XMLSecurityDSig;
 
 /**
  * This class implements SAML Metadata Query Protocol
