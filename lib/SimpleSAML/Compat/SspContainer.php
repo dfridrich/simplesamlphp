@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace SimpleSAML\Compat;
 
 use Psr\Log\LoggerInterface;
-use SAML2\Compat\AbstractContainer;
-use SAML2\XML\saml\CustomIdentifierInterface;
 use SimpleSAML\Assert\Assert;
+use SimpleSAML\SAML2\Compat\ContainerInterface;
+use SimpleSAML\SAML2\XML\saml\CustomIdentifierInterface;
 use SimpleSAML\Utils;
 use SimpleSAML\XML\AbstractXMLElement;
 
-class SspContainer extends AbstractContainer
+class SspContainer implements ContainerInterface
 {
     /** @var \Psr\Log\LoggerInterface */
     protected LoggerInterface $logger;
@@ -116,6 +116,7 @@ class SspContainer extends AbstractContainer
 
     /**
      * @inheritDoc
+     */
     public function registerExtensionHandler(string $class): void
     {
         Assert::subclassOf($class, AbstractXMLElement::class);
@@ -127,11 +128,11 @@ class SspContainer extends AbstractContainer
         }
         $this->registry[$key] = $class;
     }
-     */
 
 
     /**
      * @inheritDoc
+     */
     public function getElementHandler(string $namespace, string $element): ?string
     {
         Assert::notEmpty($namespace, 'Cannot search for handlers without an associated namespace URI.');
@@ -139,11 +140,11 @@ class SspContainer extends AbstractContainer
 
         return $this->registry[join(':', [urlencode($namespace), $element])];
     }
-     */
 
 
     /**
      * @inheritDoc
+     */
     public function getIdentifierHandler(string $type): ?string
     {
         Assert::notEmpty($type, 'Cannot search for identifier handlers with an empty type.');
@@ -151,5 +152,4 @@ class SspContainer extends AbstractContainer
         $handler = $type . ':BaseID';
         return array_key_exists($handler, $this->registry) ? $this->registry[$handler] : null;
     }
-     */
 }
