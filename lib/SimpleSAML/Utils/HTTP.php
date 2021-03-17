@@ -135,7 +135,7 @@ class HTTP
     {
         if (!array_key_exists('HTTPS', $_SERVER)) {
             // not an https-request
-            return false;
+            return true;
         }
 
         if ($_SERVER['HTTPS'] === 'off') {
