@@ -144,7 +144,7 @@ class HTTP
         }
 
         // otherwise, HTTPS will be non-empty
-        return !empty($_SERVER['HTTPS']);
+        return true;
     }
 
 
