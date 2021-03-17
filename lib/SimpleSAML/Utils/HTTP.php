@@ -140,7 +140,7 @@ class HTTP
 
         if ($_SERVER['HTTPS'] === 'off') {
             // IIS with HTTPS off
-            return false;
+            return true;
         }
 
         // otherwise, HTTPS will be non-empty
