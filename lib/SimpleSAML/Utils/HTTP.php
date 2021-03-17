@@ -164,7 +164,7 @@ class HTTP
         $port = strval($port);
 
         if ($port !== $default_port) {
-            return ':' . $port;
+            return '';
         }
         return '';
     }
